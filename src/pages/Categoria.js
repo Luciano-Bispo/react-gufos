@@ -14,7 +14,6 @@ class Categoria extends Component {
         this.buscarCategorias = this.buscarCategorias.bind(this);
         this.atualizaEstadoTitulo = this.atualizaEstadoTitulo.bind(this);
         this.cadastrarCategoria = this.cadastrarCategoria.bind(this);
-
     }
 
     //função que faz a requisição para a api
@@ -58,6 +57,25 @@ class Categoria extends Component {
         .then(this.buscarCategorias); //atualiza a lista de categoria com a cadastrada 
     }
 
+    deletarCategoria = (id)=> {
+        console.log('Excluindo');
+
+        fetch('http://localhost:5000/api/Categorias/' + id, {
+          method: 'DELETE',
+          headers: {
+            'Content-type' : 'apllication/json'
+          }
+        }).then(resp => resp.json())
+          .then(response => {
+            console.log(response);
+            // this.listaAtualizada();
+            this.setState(()=> ({ lista: this.state.lista}))
+          })
+          .catch(error => console.log(error))
+          .then(this.buscarCategorias);
+    }
+
+
     render(){
         return(
             <div>
@@ -80,6 +98,7 @@ class Categoria extends Component {
                 <tr>
                   <th>#</th>
                   <th>Título</th>
+                  <th>Ação</th>
                 </tr>
               </thead>
 
@@ -90,9 +109,13 @@ class Categoria extends Component {
                       <tr key={categoria.categoriaId}>
                         <td> {categoria.categoriaId}</td>
                         <td> {categoria.titulo}</td>
+                        <td>
+                           <button type='submit' onClick={i => this.deletarCategoria(categoria.categoriaId)}>Excluir</button>
+                        </td>
                       </tr>
                     )
-                  }) 
+                    
+                  }.bind(this)) 
                 }
               </tbody>
             </table>

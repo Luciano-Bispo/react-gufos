@@ -23,7 +23,7 @@ class Usuarios extends Component {
     this.atualizaEstadoNome = this.atualizaEstadoNome.bind(this);
     this.atualizaEstadoEmail = this.atualizaEstadoEmail.bind(this);
     this.atualizaEstadoSenha = this.atualizaEstadoSenha.bind(this);
-
+    this.cadastrarUsuario = this.cadastrarUsuario.bind(this);
 
   }
 
@@ -58,13 +58,12 @@ atualizaEstadoSenha(event){
 
     cadastrarUsuario(event){
         event.preventDefault(); //evita comportamentos padrões da página
-        alert(this.state.senha, this.state.email, this.state.tipoUsuarioId, this.state.nome);
         fetch('http://localhost:5000/api/Usuarios',
         {
           method: 'POST', // declara que será utilizado o método post
           body : JSON.stringify({
-            nome : this.state.nome,
             email : this.state.email,
+            nome : this.state.nome,
             senha : this.state.senha,
             tipoUsuarioId : this.state.tipoUsuarioId
           }),
@@ -73,12 +72,27 @@ atualizaEstadoSenha(event){
           }
         }).then(resposta => {
           if (resposta.status === 200) {
-            console.log('Usuario cadastrada!');
+            console.log('Usuario cadastrado!');
           }
         })
         .catch(erro => console.log(erro))
-        .then(this.buscarCategorias); //atualiza a lista de categoria com a cadastrada 
+        .then(this.buscarUsuario); //atualiza a lista de categoria com a cadastrada 
     }
+
+    deletarUsuario = (id) => {
+      console.log('Excluindo');
+
+      fetch('http://localhost:5000/api/Usuarios/' + id, {
+        method:'DELETE',
+        headers: {
+          'Content-type': 'application/json'
+        }
+      }).then(resp => resp.json())
+        .catch(error => console.log(error))
+        .then(this.buscarUsuario);
+    }
+
+
 
     render(){
         return(
@@ -119,11 +133,13 @@ atualizaEstadoSenha(event){
                         <td>{usuario.nome}</td>
                         <td>{usuario.email}</td>
                         <td>{usuario.tipoUsuario.titulo}</td>
-                        <td>Editar/Excluir</td>
+                        <td>
+                          <button type='submit' onClick={i => this.deletarUsuario(usuario.usuarioId)}>Excluir</button>
+                        </td>
                       </tr>
 
                     )                  
-                })
+                }.bind(this))
               }
              
             </tbody>

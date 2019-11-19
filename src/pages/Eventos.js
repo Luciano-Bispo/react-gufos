@@ -84,6 +84,22 @@ cadastraEvento(event){
 }
 
 
+deletarEvento = (id) =>{
+   console.log('Excluindo');
+   fetch('http://localhost:5000/api/Eventos/' + id, {
+       method:'DELETE',
+       headers:{
+           'Content-type': 'application/json'
+       }
+   }).then(resp => resp.json())
+     .then(response => {
+         console.log(response);
+        //  this.setState(() => ({ lista: this.state.lista}))
+        }) 
+        .catch(error => console.log(error))
+        .then(this.buscarEventos);
+}
+
     render() {
         return (
             <div>
@@ -109,6 +125,7 @@ cadastraEvento(event){
                                         <th>Data</th>
                                         <th>Acesso Livre</th>
                                         <th>Tipo do Evento</th>
+                                        <th>Ação</th>
                                     </tr>
                                 </thead>
 
@@ -120,13 +137,16 @@ cadastraEvento(event){
                                             <tr key={eventos.eventoId}>
 
                                                 <td> {eventos.eventoId} </td>
-                                                <th> {eventos.titulo} </th>
-                                                <th> {eventos.dataEvento } </th>
-                                                <th> {eventos.acessoLivre ? 'Público' : 'Privado'}</th>
-                                                <th> {eventos.categoria.titulo}</th>
+                                                <td> {eventos.titulo} </td>
+                                                <td> {eventos.dataEvento } </td>
+                                                <td> {eventos.acessoLivre ? 'Público' : 'Privado'}</td>
+                                                <td> {eventos.categoria.titulo}</td>
+                                                <td> 
+                                                    <button type='submit' onClick={i => this.deletarEvento(eventos.eventoId)}>Excluir</button>
+                                                </td>
                                             </tr>
                                         )
-                                    })
+                                    }.bind(this))
                                     }
                                 </tbody>
                             </table>
