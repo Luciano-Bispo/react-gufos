@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{ Component } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
@@ -10,17 +10,52 @@ import Eventos from './pages/Eventos';
 import Login from './pages/Login'; 
 import Usuarios from './pages/Usuarios'; 
 
+import { usuarioAutenticado, parseJwt  } from './services/auth'
+
 import NotFound from './pages/NotFound';
 //arquivo de configuração de rotas
-import {Route, BrowserRouter as Router, Switch} from 'react-router-dom';
+import {Route, BrowserRouter as Router, Switch, Redirect} from 'react-router-dom';
+
+
+const PermissaoAdm =({ component : Component }) => (
+    
+    <Route 
+        render = { props => 
+        
+            usuarioAutenticado() && parseJwt().Role === 'Administrador' ? ( 
+                <Component {...props} /> 
+            ) : ( 
+                <Redirect to={{pathname:'Login'}} /> 
+                ) 
+        }
+
+    />
+)
+
+const PermissaoAluno =({ component : Component }) => (
+    
+    <Route 
+        render = { props => 
+        
+            usuarioAutenticado() && parseJwt().Role === 'Aluno' ? ( 
+                <Component {...props} /> 
+            ) : ( 
+                <Redirect to={{pathname:'Login'}} /> 
+                ) 
+        }
+
+    />
+)
+
+
 
 const Rotas = (
     <Router>
         <div>
             <Switch >
                 <Route exact path='/' component={ App } />
-                <Route path='/categoria' component={ Categoria }/>
-                <Route path='/Eventos' component={ Eventos }/>
+                <PermissaoAdm path='/categoria' component={ Categoria }/>
+                <PermissaoAluno path='/Eventos' component={ Eventos }/>
                 <Route path='/Login' component={ Login }/>
                 <Route path='/Usuarios' component={ Usuarios }/>
 

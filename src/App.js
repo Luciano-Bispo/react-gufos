@@ -14,7 +14,7 @@ function App() { //retorna para o navegador
      <header className="cabecalhoPrincipal">
         <div className="container">
           <img src={ icon } />
-          <nav class="cabecalhoPrincipal-nav">
+          <nav className="cabecalhoPrincipal-nav">
             <a>Home</a>
             <a>Eventos</a>
             <a>Contato</a>

@@ -3,6 +3,8 @@ import Axios from 'axios';
 //css
 import '../assets/css/login.css';
 
+import { parseJwt } from '../services/auth';
+
 //imagem
 import icon from '../assets/img/icon-login.png';
 
@@ -10,9 +12,10 @@ class Login extends Component {
 constructor(props){
   super(props);
   this.state = {
-    email:'',
-    senha:'',
-    errorMessage:''
+    email : '',
+    senha : '',
+    errorMessage : '',
+    isLoading : false
   }
 }
 
@@ -23,6 +26,12 @@ atualizaEstado(event){
 
 efetuaLogin(event){
   event.preventDefault();
+  
+  this.setState({ errorMessage : ''});
+
+  //define que a requisição está em andamento
+  this.setState({isLoading : true});
+  
   Axios.post('http://localhost:5000/api/Login', 
   {
     email: this.state.email,
@@ -30,11 +39,28 @@ efetuaLogin(event){
   }).then(res => {
     if (res.status === 200) {
         localStorage.setItem('usuario-token', res.data.token); 
-        console.log('meu token é:' + res.data.token);  
-    }
+        console.log('meu token é:' + res.data.token); 
+        this.setState({isLoading : false}); 
+        // console.log(parseJwt().Role);
+
+        if (parseJwt().Role === 'Administrador') {
+
+          //redirecionamento
+          this.props.history.push('/Categoria');
+
+        }else{
+
+          //redirecionamento
+          this.props.history.push('/Eventos');
+
+        } 
+
+      }
   }).catch(erro => {
-    this.setState({ errorMessage : 'Email ou senha inválido!'})
+    this.setState({ errorMessage : 'Email ou senha inválido!'});
     console.log(erro);
+    this.setState({isLoading : false}); 
+
   } );
 
 }
@@ -79,9 +105,18 @@ efetuaLogin(event){
               />
             </div>
             <div className="item">
-              <button className="btn btn__login" id="btn__login " type='submit'>
-                Login
-              </button>
+              <p>{this.state.errorMessage}</p>
+
+              {/* verifica se a requisição está em andamento, se tiver disabilita o clic */}
+              {
+                this.state.isLoading === true &&
+                  <button className="btn " id="btn__login " type='submit' disabled>Loading...</button>
+              }
+              {
+                this.state.isLoading === false &&
+                  <button className="btn btn__login" id="btn__login " type='submit'>Login</button>
+              }
+
             </div>
           </form>
         </div>
