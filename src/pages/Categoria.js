@@ -2,13 +2,23 @@ import React, { Component } from 'react';
 import Rodape from '../componentes/Rodape';
 import icon from  '../assets/img/icon-login.png';
 
+import { MDBContainer, MDBBtn, MDBModal, MDBModalBody, MDBModalHeader, MDBModalFooter, MDBInput } from 'mdbreact';
+
+
 class Categoria extends Component {
     
     constructor(props){
         super(props);
         this.state = {
             listaCategorias: [],
-            titulo: ''
+            titulo: '',
+            loading : false,
+            modal : false,
+            erroMessage : '',
+            editarModal : {
+              categoriaId : '',
+              titulo : ''
+            }
         }
 
         this.buscarCategorias = this.buscarCategorias.bind(this);
@@ -16,14 +26,26 @@ class Categoria extends Component {
         this.cadastrarCategoria = this.cadastrarCategoria.bind(this);
     }
 
+   
+
     //função que faz a requisição para a api
     //atribui os dados recebidos ao state lista categorias
     //e caso ocorra um erro, exibe no console do navegador
     buscarCategorias(){
+
+        // setar state loading
+        this.setState({loading : true});
+
         fetch('http://localhost:5000/api/Categorias')
         .then(resposta => resposta.json())
-        .then(data => this.setState({ listaCategorias: data }))
-        .catch((erro) => console.log(erro));
+        .then(data => {
+          this.setState({ listaCategorias: data })
+          this.setState({loading : false});
+      })
+        .catch((erro) => {
+          this.setState({loading : false});
+          console.log(erro)
+        });
     }
 
     //assim que a pagina for carregada, chama a função buscarCategorias
@@ -68,15 +90,69 @@ class Categoria extends Component {
         }).then(resp => resp.json())
           .then(response => {
             console.log(response);
-            // this.listaAtualizada();
             this.setState(()=> ({ lista: this.state.lista}))
+            this.buscarCategorias()
           })
-          .catch(error => console.log(error))
-          .then(this.buscarCategorias);
+          .catch(error => {
+          
+            console.log(error)
+            this.setState({erroMessage : 'Não foi possivel excluir, verifique se não há um evento cadastrado com essa categoria'})
+          
+          });
+
     }
 
+//Alterar
+
+ // add toggle
+ toggle = () => {
+  this.setState({
+    modal : !this.state.modal
+  })
+}
+
+alterarCategoria = (categoria) =>{
+  this.setState({
+    editarModal : {
+      categoriaId : categoria.categoriaId,
+      titulo:categoria.titulo 
+    }
+  })
+  //abrir modal
+  this.toggle();
+}
+
+salvarAlteracoes = (event) =>{
+  event.preventDefault();
+
+  fetch('http://localhost:5000/api/Categorias/'+this.state.editarModal.categoriaId, {
+    method : 'PUT',
+    body: JSON.stringify(this.state.editarModal),
+    headers: {
+      'Content-type' : 'application/json'
+    }
+  }).then(response => response.json())
+    .then(
+      setTimeout(() => {
+        this.buscarCategorias()
+      }, 2000)
+    ).catch(erro => console.log(erro));
+
+    // fecha o modal
+      this.toggle();
+}
+
+//atualizar titulo do modal
+atualizarEditarModalTitulo(input){
+  this.setState({
+    editarModal:{
+    categoriaId : this.state.editarModal.categoriaId,
+    titulo: input.target.value
+  }})
+}
 
     render(){
+      let{ loading } = this.state;
         return(
             <div>
       <header class="cabecalhoPrincipal">
@@ -110,6 +186,7 @@ class Categoria extends Component {
                         <td> {categoria.categoriaId}</td>
                         <td> {categoria.titulo}</td>
                         <td>
+                           <button type='submit' onClick={e => this.alterarCategoria(categoria)}>Alterar</button>
                            <button type='submit' onClick={i => this.deletarCategoria(categoria.categoriaId)}>Excluir</button>
                         </td>
                       </tr>
@@ -119,8 +196,21 @@ class Categoria extends Component {
                 }
               </tbody>
             </table>
+          
+          {/*erro */}
+            {this.state.erroMessage && <div className='text-danger'>{this.state.erroMessage}</div>  }
+
+            {/* <i class="fas fa-spinner"></i> */}
+
           </div>
 
+          {/* loading */}
+            {loading && <i className='fa fa-spin fa-spinner fa-2x'></i>}
+
+          <div>
+              
+          </div>
+          
           <div class="container" id="conteudoPrincipal-cadastro">
             <h2 class="conteudoPrincipal-cadastro-titulo">
               Cadastrar Tipo de Evento
@@ -144,6 +234,28 @@ class Categoria extends Component {
           </div>
         </section>
       </main>
+
+      <MDBContainer>
+        <form onSubmit={this.salvarAlteracoes}>
+          <MDBModal isOpen={this.state.modal} toggle={this.toggle}>
+            <MDBModalHeader toggle={this.toggle}>Alterar <b>{this.state.editarModal.titulo}</b></MDBModalHeader>
+            <MDBModalBody>
+              
+              <MDBInput 
+                label="Categoria"
+                value={this.state.editarModal.titulo}
+                onChange={this.atualizarEditarModalTitulo.bind(this)}
+              />
+            
+            </MDBModalBody>
+            <MDBModalFooter>
+              <MDBBtn color="secondary" onClick={this.toggle}>Fechar</MDBBtn>
+              <MDBBtn color="primary" type='submit'>Alterar</MDBBtn>
+            </MDBModalFooter>
+          </MDBModal>
+      </form>
+    </MDBContainer>
+
 
        <Rodape />     
     </div>
